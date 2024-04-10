@@ -46,7 +46,7 @@ class LineDetection:
             return None, None, None
 
         # polyfit
-        p, residual, rank, singular_values, rcond = np.polyfit(yx[:, 0], yx[:, 1], 3, full=True)
+        p, residual, rank, singular_values, rcond = np.polyfit(yx[:, 0], yx[:, 1], 1, full=True)
         ys = np.linspace(0, img.shape[0] - 1, img.shape[0])
         xs = np.polyval(p, ys)
 
@@ -74,13 +74,13 @@ class LineDetection:
         out_img = img_in
 
         if xs1 is None:
-            return out_img
+            return None, None
 
         # fit a second polynomial
         xs2, ys, p2 = self.polyfit(thres_img, p1, 15, False)
 
         if xs2 is None:
-            return out_img
+            return None, None
 
         yx1 = np.int16(np.hstack((ys[:, None], xs[:, None])))
         yx1 = yx1[yx1[:, 1] < img.shape[1]]

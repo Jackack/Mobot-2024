@@ -4,13 +4,16 @@ import numpy as np
 import cv2
 
 from linedetect import *
-# from camera import *
 # from drive import *
-
-
 detector = LineDetection()
-# cam = Camera()
-# drive = Drive()
+
+from picamera2 import Picamera2
+picam2 = Picamera2()
+picam2.preview_configuration.main.size = (1280,720)
+picam2.preview_configuration.main.format = "RGB888"
+picam2.preview_configuration.align()
+picam2.configure("preview")
+picam2.start()
 
 
 def transformROI(img):
@@ -23,12 +26,10 @@ def transformROI(img):
     matrix = cv2.getPerspectiveTransform(pts1, pts2)
     return cv2.warpPerspective(frame, matrix, (500, 600))
 
-p = 0.001
-vid = cv.VideoCapture(0)
+p = 0.005
 
 while True:
-    # read frame
-    ret, frame = vid.read()
+    frame = picam2.capture_array()
 
     small_to_large_image_size_ratio = 0.2
     frame = cv2.resize(frame, # original image
@@ -37,12 +38,10 @@ while True:
                 fy=small_to_large_image_size_ratio,
                 interpolation=cv2.INTER_NEAREST)
 
-    if not ret:
-        time.sleep(0.2)
-        continue
-
     # frame = transformROI(cam.read())
     lineFrame, xs = detector.detectLine(frame)
+    if xs is None:
+        continue
 
     # viz
     cv.imshow("frame", lineFrame)
@@ -58,4 +57,6 @@ while True:
     # proportional control
     # drive.setSteer(p * err)
     print(p*err)
+
+vid.release()
 
