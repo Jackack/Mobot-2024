@@ -90,15 +90,9 @@ class LineDetection:
         out_img[yx1[:, 0], np.clip(yx1[:, 1] + 1, 0, out_img.shape[1]) - 1, :] = np.array([0, 0, 255])
         out_img[yx1[:, 0], np.clip(yx1[:, 1] - 1, 0, out_img.shape[1]) - 1, :] = np.array([0, 0, 255])
 
-        # yx2 = np.int16(np.hstack((ys[:, None], xs2[:, None])))
-        # yx2 = yx2[yx2[:, 1] < img.shape[1]]
-        # yx2 = yx2[yx2[:, 1] >= 0]
+        # xs is the list of x-coordinates in the image
 
-        # out_img[yx2[:, 0], yx2[:, 1], :] = np.array([0, 255, 0])
-        # out_img[yx2[:, 0], np.clip(yx2[:, 1] + 1, 0, out_img.shape[1]) - 1, :] = np.array([0, 255, 0])
-        # out_img[yx2[:, 0], np.clip(yx2[:, 1] - 1, 0, out_img.shape[1]) - 1, :] = np.array([0, 255, 0])
-
-        return out_img
+        return out_img, xs
 
 
 if __name__ == "__main__":
