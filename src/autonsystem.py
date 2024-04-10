@@ -4,16 +4,10 @@ import numpy as np
 import cv2
 
 from linedetect import *
-# from drive import *
+from drive import *
 detector = LineDetection()
 
 from picamera2 import Picamera2
-picam2 = Picamera2()
-picam2.preview_configuration.main.size = (1280,720)
-picam2.preview_configuration.main.format = "RGB888"
-picam2.preview_configuration.align()
-picam2.configure("preview")
-picam2.start()
 
 
 def transformROI(img):
@@ -26,37 +20,53 @@ def transformROI(img):
     matrix = cv2.getPerspectiveTransform(pts1, pts2)
     return cv2.warpPerspective(frame, matrix, (500, 600))
 
-p = 0.005
+p = 2
+drv = Drive()
+picam2 = Picamera2()
+picam2.preview_configuration.main.size = (1280,720)
+picam2.preview_configuration.main.format = "RGB888"
+picam2.preview_configuration.align()
+picam2.configure("preview")
+picam2.start()
 
-while True:
-    frame = picam2.capture_array()
+def main():
+    drv.forward()
 
-    small_to_large_image_size_ratio = 0.2
-    frame = cv2.resize(frame, # original image
-                (0,0), # set fx and fy, not the final size
-                fx=small_to_large_image_size_ratio,
-                fy=small_to_large_image_size_ratio,
-                interpolation=cv2.INTER_NEAREST)
+    while True:
+        frame = picam2.capture_array()
 
-    # frame = transformROI(cam.read())
-    lineFrame, xs = detector.detectLine(frame)
-    if xs is None:
-        continue
+        small_to_large_image_size_ratio = 0.2
+        frame = cv2.resize(frame, # original image
+                    (0,0), # set fx and fy, not the final size
+                    fx=small_to_large_image_size_ratio,
+                    fy=small_to_large_image_size_ratio,
+                    interpolation=cv2.INTER_NEAREST)
 
-    # viz
-    cv.imshow("frame", lineFrame)
-    if (cv.waitKey(1) & 0xFF == ord('q')):
-        break
+        # frame = transformROI(cam.read())
+        lineFrame, xs = detector.detectLine(frame)
+        if xs is None:
+            continue
 
-    # center the x-coords
-    xs = xs - frame.shape[1]/2
+        # viz
+        cv.imshow("frame", lineFrame)
+        if (cv.waitKey(1) & 0xFF == ord('q')):
+            break
 
-    # goal: keep the xs' centered (0)
-    err = np.sum(xs)
+        # center the x-coords
+        xs = xs - frame.shape[1]/2
 
-    # proportional control
-    # drive.setSteer(p * err)
-    print(p*err)
+        # goal: keep the xs' centered (0)
+        xs_slice = xs[xs.shape[0] - 10 : xs.shape[0] - 1]
+        err = np.mean(xs_slice)
 
-vid.release()
+        # proportional control
+        drv.steer(-p * err)
+        print(-p*err)
+    vid.release()
 
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Interrupted')
+        drv.stopcar()

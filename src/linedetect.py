@@ -13,10 +13,10 @@ class LineDetection:
         return img
 
     def polymask(self, img, xs, width):
-        print("img shape", img.shape)
+        # print("img shape", img.shape)
         coords = np.mgrid[:img.shape[0], :img.shape[1]]
         xs = xs[:, None]
-        print("xs shape", xs.shape)
+        # print("xs shape", xs.shape)
         xdist = np.abs(coords[1, :, :] - np.repeat(xs, img.shape[1], axis=1))
         return np.where((xdist > width)[:, :, None], img, np.zeros(img.shape))
 
@@ -27,7 +27,7 @@ class LineDetection:
         # is returned.
 
         yx = np.int16(np.hstack((line_y[:, None], line_x[:, None])))
-        print(yx.shape)
+        # print(yx.shape)
 
         xs = np.polyval(poly, yx[:, 0])
         if include:
