@@ -67,7 +67,7 @@ class LineDetection:
         # thres_img = cv.erode(thres_img, kernel, iterations=1)
         # thres_img = cv.dilate(thres_img, kernel, iterations=1)
 
-        xs1, ys, p1 = self.polyfit(thres_img, self.polynomial_1, 7, True)
+        xs1, ys, p1 = self.polyfit(thres_img, self.polynomial_1, 100, True)
         if not p1 is None:
             self.polynomial_1 = p1
 

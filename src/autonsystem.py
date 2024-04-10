@@ -1,13 +1,16 @@
+import time
+
 import numpy as np
 import cv2
 
 from linedetect import *
-from camera import *
-from drive import *
+# from camera import *
+# from drive import *
 
-cam = Camera()
+
 detector = LineDetection()
-drive = Drive()
+# cam = Camera()
+# drive = Drive()
 
 
 def transformROI(img):
@@ -20,12 +23,31 @@ def transformROI(img):
     matrix = cv2.getPerspectiveTransform(pts1, pts2)
     return cv2.warpPerspective(frame, matrix, (500, 600))
 
-p = 0.1
+p = 0.001
+vid = cv.VideoCapture(0)
 
 while True:
     # read frame
-    frame = transformROI(cam.read())
+    ret, frame = vid.read()
+
+    small_to_large_image_size_ratio = 0.2
+    frame = cv2.resize(frame, # original image
+                (0,0), # set fx and fy, not the final size
+                fx=small_to_large_image_size_ratio,
+                fy=small_to_large_image_size_ratio,
+                interpolation=cv2.INTER_NEAREST)
+
+    if not ret:
+        time.sleep(0.2)
+        continue
+
+    # frame = transformROI(cam.read())
     lineFrame, xs = detector.detectLine(frame)
+
+    # viz
+    cv.imshow("frame", lineFrame)
+    if (cv.waitKey(1) & 0xFF == ord('q')):
+        break
 
     # center the x-coords
     xs = xs - frame.shape[1]/2
@@ -34,5 +56,6 @@ while True:
     err = np.sum(xs)
 
     # proportional control
-    drive.setSteer(p * err)
+    # drive.setSteer(p * err)
+    print(p*err)
 
